@@ -58,7 +58,7 @@ export default function ComponentDetail({ componentId }: ComponentDetailProps) {
             <div className="flex border-b border-amber-900/30">
               <button
                 onClick={() => setActiveTab("preview")}
-                className={`px-4 py-2 flex-1 text-center terminal-font ${
+                className={`px-4 py-2 flex-1 text-center terminal-font cursor-pointer ${
                   activeTab === "preview" ? "bg-amber-900/20 text-amber-400" : "text-amber-300 hover:bg-[#2a2a2a]"
                 }`}
               >
@@ -66,7 +66,7 @@ export default function ComponentDetail({ componentId }: ComponentDetailProps) {
               </button>
               <button
                 onClick={() => setActiveTab("code")}
-                className={`px-4 py-2 flex-1 text-center terminal-font ${
+                className={`px-4 py-2 flex-1 text-center terminal-font cursor-pointer ${
                   activeTab === "code" ? "bg-amber-900/20 text-amber-400" : "text-amber-300 hover:bg-[#2a2a2a]"
                 }`}
               >

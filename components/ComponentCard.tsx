@@ -56,7 +56,7 @@ export default function ComponentCard({ component, onPreviewClick, variants }: C
 
         <button
           onClick={() => onPreviewClick(component.id)}
-          className="absolute inset-0 hover-button w-full h-full flex items-center justify-center transition-all"
+          className="absolute inset-0 hover-button w-full h-full flex items-center justify-center transition-all cursor-pointer"
         >
           <span className="opacity-0 hover:opacity-100 transition-opacity flex items-center gap-2 bg-amber-500 text-black px-4 py-2 rounded terminal-font">
             <Eye size={16} /> Preview
