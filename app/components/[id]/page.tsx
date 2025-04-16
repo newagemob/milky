@@ -1,15 +1,14 @@
 import type { Metadata } from "next"
-import { PageProps } from "next/types"
 import ClientComponentDetail from "@/components/ClientComponentDetail"
 import { ComponentData, componentsData } from "@/lib/components-data"
 
-type Props = PageProps<{
+type Props = {
   params: { id: string }
-  searchParams: { [key: string]: string | string[] | undefined }
-}>
+  searchParams: Record<string, string | string[] | undefined>
+}
 
 // This is a server component
-export default function ComponentPage({ params }: Props) {
+export default async function ComponentPage({ params }: Props) {
   return <ClientComponentDetail componentId={params.id} />
 }
 
@@ -20,7 +19,7 @@ export function generateStaticParams() {
   }))
 }
 
-// Optionally generate metadata for the page
+// Fix the metadata generation function to match the correct Props type
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const componentData = componentsData.find(c => c.id === params.id)
   
