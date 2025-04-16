@@ -1,29 +1,31 @@
 import type { Metadata } from "next"
 import ClientComponentDetail from "@/components/ClientComponentDetail"
-import { ComponentData, componentsData } from "@/lib/components-data"
+import { componentsData, type ComponentData } from "@/lib/components-data"
 
 type PageProps = {
-  params: { id: string }
+  params: {
+    id: string
+  }
 }
 
-// Server Component
+// Server component
 export default function ComponentPage({ params }: PageProps) {
   return <ClientComponentDetail componentId={params.id} />
 }
 
-// For static generation of dynamic routes
-export function generateStaticParams() {
+// Static generation of all dynamic routes
+export async function generateStaticParams(): Promise<PageProps["params"][]> {
   return componentsData.map((component: ComponentData) => ({
     id: component.id,
   }))
 }
 
-// Proper type for generateMetadata function
+// Metadata generator
 export async function generateMetadata(
-  { params }: { params: { id: string } }
+  { params }: PageProps
 ): Promise<Metadata> {
   const componentData = componentsData.find(c => c.id === params.id)
-  
+
   return {
     title: componentData?.name || 'Component Details',
     description: componentData?.description || 'GLSL component details',
