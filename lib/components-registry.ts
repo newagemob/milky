@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import type { ComponentProps } from "react"
 
 import { MilkyOrbR3F } from "@/components/glsl/MilkyOrbR3F"
 import { MilkyStarsR3F } from "@/components/glsl/MilkyStarsR3F"
@@ -15,7 +16,7 @@ export interface ComponentInfo {
   description: string
   tags: string[]
   thumbnail: string
-  component: React.ComponentType<any>
+  component: React.ComponentType<Record<string, unknown>>
   source: string
 }
 

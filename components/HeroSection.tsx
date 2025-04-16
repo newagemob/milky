@@ -3,6 +3,7 @@ import { Canvas } from "@react-three/fiber"
 import { useInView } from "react-intersection-observer"
 import { MilkyOrbR3F } from "@/components/glsl/MilkyOrbR3F"
 import { motion } from "framer-motion"
+import Link from "next/link"
 
 export default function HeroSection() {
   const { ref, inView } = useInView({
@@ -43,18 +44,18 @@ export default function HeroSection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.4 }}
         >
-          <a
+          <Link
             href="#gallery"
             className="px-8 py-3 bg-transparent border border-amber-500 text-amber-400 rounded hover:bg-amber-900/20 hover:text-amber-300 transition-colors terminal-font"
           >
             Explore Gallery
-          </a>
-          <a
+          </Link>
+          <Link
             href="/components"
             className="px-8 py-3 bg-amber-500 text-black rounded hover:bg-amber-400 transition-colors terminal-font"
           >
             View All Components
-          </a>
+          </Link>
         </motion.div>
       </div>
 

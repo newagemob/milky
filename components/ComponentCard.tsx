@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { Code, Eye, Copy, Check } from "lucide-react"
-import { motion } from "framer-motion"
+import { motion, Variants } from "framer-motion"
 import HoverPreview from "@/components/HoverPreview"
 import { ComponentData } from "@/lib/components-data"
 import { 
@@ -19,7 +19,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 interface ComponentCardProps {
   component: ComponentData
   onPreviewClick: (id: string) => void
-  variants?: any
+  variants?: Variants
 }
 
 export default function ComponentCard({ component, onPreviewClick, variants }: ComponentCardProps) {
