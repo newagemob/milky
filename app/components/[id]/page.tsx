@@ -1,26 +1,31 @@
+// app/components/[id]/page.tsx
 import type { Metadata } from "next"
 import ClientComponentDetail from "@/components/ClientComponentDetail"
 import { ComponentData, componentsData } from "@/lib/components-data"
 
-// Server component for dynamic route /components/[id]
-export default function ComponentPage({ params }: { params: { id: string } }) {
+// ✅ Main page component
+export default function ComponentPage({
+  params,
+}: {
+  params: { id: string }
+}) {
   return <ClientComponentDetail componentId={params.id} />
 }
 
-// Static params for SSG (Static Site Generation)
-export function generateStaticParams() {
+// ✅ Static params function (must return a list of `params`)
+export function generateStaticParams(): Array<{ id: string }> {
   return componentsData.map((component: ComponentData) => ({
     id: component.id,
   }))
 }
 
-// Metadata for each dynamic page
+// ✅ Metadata generation
 export async function generateMetadata({
   params,
 }: {
   params: { id: string }
 }): Promise<Metadata> {
-  const componentData = componentsData.find(c => c.id === params.id)
+  const componentData = componentsData.find((c) => c.id === params.id)
 
   return {
     title: componentData?.name || "Component Details",
