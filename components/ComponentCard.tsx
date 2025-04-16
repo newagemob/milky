@@ -2,10 +2,19 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Download, Code, Eye } from "lucide-react"
+import { Code, Eye, Copy, Check } from "lucide-react"
 import { motion } from "framer-motion"
 import HoverPreview from "@/components/HoverPreview"
 import { ComponentData } from "@/lib/components-data"
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger 
+} from "@/components/ui/dialog"
+import { CodeBlock, CodeBlockCode } from "@/components/ui/code-block"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 interface ComponentCardProps {
   component: ComponentData
@@ -16,6 +25,7 @@ interface ComponentCardProps {
 export default function ComponentCard({ component, onPreviewClick, variants }: ComponentCardProps) {
   const [hoverPreviewId, setHoverPreviewId] = useState<string | null>(null)
   const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null)
+  const [copied, setCopied] = useState(false)
 
   // Handle mouse enter with delay to prevent accidental triggers
   const handleMouseEnter = () => {
@@ -35,6 +45,12 @@ export default function ComponentCard({ component, onPreviewClick, variants }: C
       setHoverTimeout(null)
     }
     setHoverPreviewId(null)
+  }
+
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(component.code)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
   }
 
   return (
@@ -83,12 +99,37 @@ export default function ComponentCard({ component, onPreviewClick, variants }: C
           >
             <Code size={14} /> View Details
           </Link>
-          <Link
-            href={`/api/download/${component.id}`}
-            className="flex items-center gap-1 text-sm text-amber-400 hover:text-amber-300 terminal-font"
-          >
-            <Download size={14} /> Download
-          </Link>
+          <Dialog>
+            <DialogTrigger asChild>
+              <button className="flex items-center gap-1 text-sm text-amber-400 hover:text-amber-300 terminal-font cursor-pointer">
+                <Copy size={14} /> Copy Code
+              </button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-3xl bg-[#1e1e1e] border-amber-900/30 text-amber-200">
+              <DialogHeader>
+                <DialogTitle className="text-amber-400 terminal-font">{component.name} Code</DialogTitle>
+              </DialogHeader>
+              <div className="mt-4">
+                <CodeBlock>
+                  <div className="px-4 py-2 flex justify-end border-b border-amber-900/30">
+                    <button
+                      onClick={handleCopyCode}
+                      className="p-2 rounded bg-[#2a2a2a] text-amber-400 hover:bg-[#333333] transition-colors"
+                    >
+                      {copied ? <Check size={16} /> : <Copy size={16} />}
+                    </button>
+                  </div>
+                  <ScrollArea className="h-[60vh] max-h-[500px]">
+                    <CodeBlockCode
+                      code={component.code}
+                      language="tsx"
+                      theme="github-dark"
+                    />
+                  </ScrollArea>
+                </CodeBlock>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </motion.div>

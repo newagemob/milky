@@ -3,9 +3,18 @@
 import { useState } from "react"
 import Link from "next/link"
 import { Canvas } from "@react-three/fiber"
-import { Download, Copy, Check, CodeIcon, ArrowLeft } from "lucide-react"
+import { Copy, Check, CodeIcon, ArrowLeft } from "lucide-react"
 import { motion } from "framer-motion"
 import { getComponentById } from "@/lib/components-data"
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger 
+} from "@/components/ui/dialog"
+import { CodeBlock, CodeBlockCode } from "@/components/ui/code-block"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 interface ComponentDetailProps {
   componentId: string
@@ -84,7 +93,7 @@ export default function ComponentDetail({ componentId }: ComponentDetailProps) {
                   <div className="absolute top-2 right-2 z-10">
                     <button
                       onClick={handleCopyCode}
-                      className="p-2 rounded bg-[#2a2a2a] text-amber-400 hover:bg-[#333333] transition-colors"
+                      className="p-2 rounded bg-[#2a2a2a] text-amber-400 hover:bg-[#333333] transition-colors cursor-pointer"
                     >
                       {copied ? <Check size={16} /> : <Copy size={16} />}
                     </button>
@@ -141,17 +150,44 @@ export default function ComponentDetail({ componentId }: ComponentDetailProps) {
             </div>
 
             <div className="flex flex-col gap-3">
-              <motion.a
-                href={`/api/download/${component.id}`}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-amber-500 text-black rounded hover:bg-amber-400 transition-colors terminal-font"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <Download size={18} /> Download Component
-              </motion.a>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <motion.button
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-amber-500 text-black rounded hover:bg-amber-400 transition-colors terminal-font cursor-pointer"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Copy size={18} /> Copy Component Code
+                  </motion.button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-3xl bg-[#1e1e1e] border-amber-900/30 text-amber-200">
+                  <DialogHeader>
+                    <DialogTitle className="text-amber-400 terminal-font">Component Code</DialogTitle>
+                  </DialogHeader>
+                  <div className="mt-4">
+                    <CodeBlock>
+                      <div className="px-4 py-2 flex justify-end border-b border-amber-900/30">
+                        <button
+                          onClick={handleCopyCode}
+                          className="p-2 rounded bg-[#2a2a2a] text-amber-400 hover:bg-[#333333] transition-colors cursor-pointer"
+                        >
+                          {copied ? <Check size={16} /> : <Copy size={16} />}
+                        </button>
+                      </div>
+                      <ScrollArea className="h-[60vh] max-h-[500px]">
+                        <CodeBlockCode
+                          code={component.code}
+                          language="tsx"
+                          theme="github-dark"
+                        />
+                      </ScrollArea>
+                    </CodeBlock>
+                  </div>
+                </DialogContent>
+              </Dialog>
               <motion.button
                 onClick={() => setActiveTab("code")}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-transparent border border-amber-500 text-amber-400 rounded hover:bg-amber-900/20 hover:text-amber-300 transition-colors terminal-font"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-transparent border border-amber-500 text-amber-400 rounded hover:bg-amber-900/20 hover:text-amber-300 transition-colors terminal-font cursor-pointer"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >

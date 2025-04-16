@@ -61,7 +61,7 @@ export default function ComponentPreview({ componentId, onClose }: ComponentPrev
           >
             <button
               onClick={handleClose}
-              className="p-2 rounded-full bg-black bg-opacity-50 text-amber-400 hover:text-amber-300 transition-colors"
+              className="p-2 rounded-full bg-black bg-opacity-50 text-amber-400 hover:text-amber-300 transition-colors cursor-pointer"
             >
               <X size={24} />
             </button>
