@@ -1,26 +1,120 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --amber-primary: #ffb74d;
+  --amber-light: #ffe0b2;
+  --amber-dark: #ff9800;
+  --dark-bg: #121212;
+  --dark-surface: #1e1e1e;
+  --dark-border: #333333;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--dark-bg);
+  color: var(--amber-primary);
+  overflow-x: hidden;
+  font-family: var(--font-inter);
+}
+
+.terminal-font {
+  font-family: var(--font-space-mono);
+}
+
+.grid-background {
+  position: relative;
+  min-height: 100vh;
+}
+
+.grid-background::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: linear-gradient(rgba(255, 183, 77, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 183, 77, 0.05) 1px, transparent 1px);
+  background-size: 50px 50px;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.amber-text {
+  color: var(--amber-primary);
+  text-shadow: 0 0 2px var(--amber-primary);
+}
+
+.amber-border {
+  position: relative;
+}
+
+.amber-border::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 1px solid var(--amber-primary);
+  box-shadow: 0 0 3px var(--amber-primary);
+  pointer-events: none;
+}
+
+.component-card {
+  transition: all 0.3s ease;
+  background-color: var(--dark-surface);
+  border: 1px solid var(--dark-border);
+  overflow: hidden;
+}
+
+.component-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--amber-primary);
+  box-shadow: 0 0 8px rgba(255, 183, 77, 0.3);
+}
+
+.component-card .gradient-bg {
+  background: linear-gradient(135deg, rgba(255, 152, 0, 0.6), rgba(255, 183, 77, 0.3));
+  z-index: 1;
+}
+
+.component-card .hover-button {
+  z-index: 2;
+  background-color: transparent;
+}
+
+.component-card .hover-button:hover {
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.hexagon {
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+.terminal-text {
+  font-family: var(--font-space-mono);
+  color: var(--amber-primary);
+}
+
+.terminal-window {
+  background-color: rgba(0, 0, 0, 0.8);
+  border: 1px solid var(--amber-dark);
+  box-shadow: 0 0 5px rgba(255, 183, 77, 0.3);
+  padding: 1rem;
+  border-radius: 4px;
+}
+
+.terminal-cursor::after {
+  content: "_";
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
 }
