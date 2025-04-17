@@ -93,7 +93,7 @@ const noiseFunction = `
   }
 `
 
-export function CosmicSmoke() {
+export function MilkySmokeScreenR3F() {
   const materialRef = useRef<THREE.ShaderMaterial>(null)
 
   useFrame((state) => {
