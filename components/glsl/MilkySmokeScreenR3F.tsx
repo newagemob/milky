@@ -93,7 +93,7 @@ const noiseFunction = `
   }
 `
 
-export function MilkySmokeScreenR3F() {
+export function CosmicSmoke() {
   const materialRef = useRef<THREE.ShaderMaterial>(null)
 
   useFrame((state) => {
@@ -133,36 +133,30 @@ export function MilkySmokeScreenR3F() {
             // Function to get color based on position and time
             vec3 getCosmicColor(float value, float time) {
               // Shift the colors over time
-              float t = time * 0.15;
+              float t = time * 0.1; // Slower color transitions for more dreamy effect
               
-              // Create color palette for cosmic effect - adjusted for more realism
-              vec3 color1 = vec3(0.5, 0.0, 0.8); // Purple
-              vec3 color2 = vec3(0.0, 0.7, 1.0); // Cyan
-              vec3 color3 = vec3(1.0, 0.4, 0.0); // Orange/amber
-              vec3 color4 = vec3(0.9, 0.1, 0.3); // Red
-              vec3 color5 = vec3(0.2, 0.9, 0.5); // Green
+              // Create color palette for cosmic infinity stone effect
+              vec3 color1 = vec3(0.5, 0.0, 0.8); // Purple (Mind Stone)
+              vec3 color2 = vec3(0.0, 0.7, 1.0); // Cyan (Space Stone)
+              vec3 color3 = vec3(1.0, 0.4, 0.0); // Orange/amber (Soul Stone) 
+              vec3 color4 = vec3(0.9, 0.1, 0.3); // Red (Reality Stone)
+              vec3 color5 = vec3(0.2, 0.9, 0.5); // Green (Time Stone)
+              vec3 color6 = vec3(1.0, 0.8, 0.1); // Yellow/gold (Power Stone)
               
-              // Add a subtle darkening for more realistic smoke transitions
-              vec3 darkShade = vec3(0.05, 0.05, 0.1);
+              // Create smoother transitions with better color blending
+              float colorPhase = value * 2.0 + t;
               
-              // Create smoother transitions between colors
-              float colorPhase = value + t;
+              // Use smoother transitions for more natural color blending
+              float c1 = smoothstep(0.0, 0.5, sin(colorPhase) * 0.5 + 0.5);
+              float c2 = smoothstep(0.0, 0.5, sin(colorPhase + 1.05) * 0.5 + 0.5);
+              float c3 = smoothstep(0.0, 0.5, sin(colorPhase + 2.1) * 0.5 + 0.5);
+              float c4 = smoothstep(0.0, 0.5, sin(colorPhase + 3.15) * 0.5 + 0.5);
+              float c5 = smoothstep(0.0, 0.5, sin(colorPhase + 4.2) * 0.5 + 0.5);
+              float c6 = smoothstep(0.0, 0.5, sin(colorPhase + 5.25) * 0.5 + 0.5);
               
-              // Use smoother functions for color blending
-              float c1 = pow(0.5 + 0.5 * sin(colorPhase * 0.8), 2.0);
-              float c2 = pow(0.5 + 0.5 * sin(colorPhase * 0.8 + 1.5), 2.0);
-              float c3 = pow(0.5 + 0.5 * sin(colorPhase * 0.8 + 3.0), 2.0);
-              float c4 = pow(0.5 + 0.5 * sin(colorPhase * 0.8 + 4.5), 2.0);
-              float c5 = pow(0.5 + 0.5 * sin(colorPhase * 0.8 + 6.0), 2.0);
-              
-              // Add a subtle dark edge to transitions for more realistic smoke look
-              float darkEdge = pow(sin(colorPhase * 2.0) * 0.5 + 0.5, 3.0) * 0.15;
-              
-              // Mix colors with dark edges for more realism
-              vec3 finalColor = color1 * c1 + color2 * c2 + color3 * c3 + color4 * c4 + color5 * c5;
-              finalColor = mix(finalColor, darkShade, darkEdge);
-              
-              return finalColor;
+              // Mix colors with normalization to prevent oversaturation
+              float sum = c1 + c2 + c3 + c4 + c5 + c6;
+              return (color1 * c1 + color2 * c2 + color3 * c3 + color4 * c4 + color5 * c5 + color6 * c6) / sum;
             }
             
             void main() {
@@ -175,77 +169,110 @@ export function MilkySmokeScreenR3F() {
               // Calculate distance from center
               float dist = length(p);
               
-              // Calculate angle for radial effects
+              // Calculate angle from center (for rotation effects)
               float angle = atan(p.y, p.x);
               
-              // Time variables for different animation speeds
-              float t1 = time * 0.2;  // Slow overall movement
-              float t2 = time * 0.5;  // Medium speed for billowing
-              float t3 = time * 0.05; // Very slow for stable structure
+              // Create realistic billowing movement
+              // Use time with different frequencies for different layers
+              float baseTime = time * 0.2;
               
-              // Expansion factor - smoke expands outward over time
-              float expansion = 0.5 + time * 0.1;
-              float expandedDist = dist / expansion;
-              
-              // Create multiple layers of smoke with different movements
+              // Calculate smoke density based on position and time
               float smoke = 0.0;
               
-              // Base structure - billowing outward in all directions
-              smoke += fbm(vec3(
-                p.x * 0.5 + cos(angle * 2.0 + t1) * 0.1,
-                p.y * 0.5 + sin(angle * 2.0 + t1) * 0.1,
-                t3
-              )) * smoothstep(1.0, 0.0, expandedDist);
+              // Base layer - billowing outward from center
+              // Use angle to create swirling outward motion
+              float swirl = sin(angle * 2.0 + baseTime) * 0.1;
+              float outwardFlow = baseTime * 0.3;
               
-              // Billowing detail layer - creates the outward expanding puffs
-              smoke += fbm(vec3(
-                p.x * 0.8 + cos(angle * 3.0 + t2) * 0.2 * (1.0 - expandedDist),
-                p.y * 0.8 + sin(angle * 3.0 + t2) * 0.2 * (1.0 - expandedDist),
-                t1 + expandedDist * 2.0
-              )) * 0.4 * smoothstep(0.8, 0.0, expandedDist);
+              // Create expanding rings of smoke
+              float ringDist = fract(dist * 2.0 - outwardFlow);
+              float ringMask = smoothstep(0.4, 0.6, ringDist) * smoothstep(0.6, 0.4, ringDist);
               
-              // Fine turbulence layer - adds realistic chaotic movement
-              smoke += fbm(vec3(
-                p.x * 2.0 + t2 * (0.1 + 0.2 * sin(angle * 5.0)),
-                p.y * 2.0 + t2 * (0.1 + 0.2 * cos(angle * 5.0)),
-                t1 * 2.0
-              )) * 0.15 * smoothstep(0.7, 0.0, expandedDist);
+              // Main billowing smoke layer
+              vec3 noisePos = vec3(
+                p.x * (0.5 + swirl) + cos(angle * 3.0 + baseTime * 0.7) * 0.1,
+                p.y * (0.5 + swirl) + sin(angle * 2.0 + baseTime * 0.5) * 0.1,
+                baseTime * 0.15
+              );
+              smoke += fbm(noisePos) * (1.5 - dist * 0.7);
               
-              // Edge turbulence - creates wisps at the edges
-              smoke += fbm(vec3(
-                p.x * 3.0 + cos(angle * 8.0) * 0.1 * expandedDist + t2 * 0.2,
-                p.y * 3.0 + sin(angle * 8.0) * 0.1 * expandedDist + t2 * 0.2,
-                t1 * 0.5 + expandedDist
-              )) * 0.1 * smoothstep(0.0, 0.4, expandedDist) * smoothstep(1.0, 0.7, expandedDist);
+              // Add turbulence layers
+              // Layer 1 - large billows
+              vec3 turbPos1 = vec3(
+                p.x * 0.7 + sin(baseTime * 0.3) * 0.2,
+                p.y * 0.7 + cos(baseTime * 0.4) * 0.2,
+                baseTime * 0.1 + dist * 0.5
+              );
+              smoke += fbm(turbPos1) * 0.6 * (1.0 - dist * 0.5);
               
-              // Density adjustments
-              float densityFalloff = smoothstep(expansion, 0.0, dist);
-              smoke *= densityFalloff;
+              // Layer 2 - medium details with rotation
+              float rot = baseTime * 0.2;
+              vec2 pRot = vec2(
+                p.x * cos(rot) - p.y * sin(rot),
+                p.x * sin(rot) + p.y * cos(rot)
+              );
+              vec3 turbPos2 = vec3(
+                pRot.x * 1.5 + baseTime * 0.05,
+                pRot.y * 1.5 + baseTime * 0.06,
+                baseTime * 0.13
+              );
+              smoke += fbm(turbPos2) * 0.4 * (0.8 - dist * 0.3);
               
-              // Add center density for smoke source
-              smoke += (1.0 - smoothstep(0.0, 0.2, dist)) * 0.3;
+              // Layer 3 - fine curling details
+              vec3 turbPos3 = vec3(
+                p.x * 3.0 - baseTime * 0.07,
+                p.y * 3.0 + baseTime * 0.08,
+                baseTime * 0.2 + dist
+              );
+              smoke += fbm(turbPos3) * 0.2;
+              
+              // Create pulsing effect from center
+              float pulse = sin(baseTime * 1.5) * 0.5 + 0.5;
+              smoke += (1.0 - smoothstep(0.0, 0.4 + pulse * 0.2, dist)) * 0.3;
+              
+              // Create edge curl details (realistic smoke curl at edges)
+              float edgeTurb = fbm(vec3(p * 4.0, baseTime * 0.3));
+              smoke += edgeTurb * ringMask * 0.3;
+              
+              // Density falloff from center
+              float falloff = smoothstep(2.0, 0.2, dist);
+              smoke *= falloff;
+              
+              // Add center density for source effect
+              smoke += smoothstep(0.4, 0.0, dist) * 0.5;
               
               // Clamp and adjust density for better visual
               smoke = clamp(smoke, 0.0, 1.0);
               
-              // Calculate dynamic density pockets for realistic smoke look
-              float dynamicSmokeDetail = fbm(vec3(p * 3.0 + vec2(cos(time * 0.3), sin(time * 0.2)), time * 0.1));
+              // Apply cosmic colors with variations based on position
+              // Use distance and angle to create spatial color variation
+              float colorVar = smoke + dist * 0.3 + angle * 0.05;
+              vec3 smokeColor = getCosmicColor(colorVar, time);
               
-              // Make the smoke density vary more realistically
-              smoke = mix(smoke, smoke * (0.7 + 0.3 * dynamicSmokeDetail), 0.5);
+              // Enhance realistic smoke look with depth variations
+              // Inner smoke is brighter and more energetic
+              float centerIntensity = smoothstep(1.0, 0.0, dist) * 0.5;
+              smokeColor += centerIntensity;
               
-              // Apply cosmic colors with position-based variation for more natural coloring
-              vec3 smokeColor = getCosmicColor(smoke + dist * 0.5 + dynamicSmokeDetail * 0.2, time);
+              // Add subtle dark edges to some smoke tendrils for realism
+              float edgeDark = smoothstep(0.4, 0.5, smoke) * smoothstep(0.6, 0.5, smoke) * 0.15;
+              smokeColor *= (1.0 - edgeDark);
               
-              // Adjust alpha for transparent effect with more variation at the edges
-              float alpha = smoothstep(0.0, 0.1, smoke) * smoothstep(expansion + 0.2, expansion - 0.3, dist);
+              // Create subtle color variation in darker regions
+              vec3 darkColor = getCosmicColor(colorVar + 1.57, time + 2.0) * 0.2;
+              smokeColor = mix(darkColor, smokeColor, smoothstep(0.0, 0.2, smoke));
               
-              // Apply some brightness boost to the central regions
-              float brightBoost = (1.0 - smoothstep(0.0, 0.3, dist)) * 0.4;
-              smokeColor += brightBoost;
+              // Adjust alpha for transparent effect
+              // Thinner at edges, denser near center
+              float alpha = smoothstep(0.05, 0.15, smoke) * falloff;
               
-              // Add subtle depth variations based on noise
-              smokeColor *= 0.8 + 0.2 * dynamicSmokeDetail;
+              // Add subtle glow for more cosmic feel
+              float glow = smoothstep(0.0, 0.3, smoke) * 0.3;
+              smokeColor += glow * getCosmicColor(time * 0.2, time);
+              
+              // Apply soft saturation adjustment
+              float luminance = dot(smokeColor, vec3(0.299, 0.587, 0.114));
+              smokeColor = mix(vec3(luminance), smokeColor, 1.2); // Slight saturation boost
               
               // Output the final color with transparency
               gl_FragColor = vec4(smokeColor, alpha);
