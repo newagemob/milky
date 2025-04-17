@@ -36,137 +36,121 @@ export function MilkySmokeScreenR3F() {
             uniform float iTime;
             uniform vec3 iResolution;
             
-            // Noise functions by Inigo Quilez
-            float hash21(vec2 p) {
-              p = fract(p * vec2(123.34, 456.21));
-              p += dot(p, p + 45.32);
-              return fract(p.x * p.y);
+            // Noise functions from Inigo Quilez
+            float hash(float n) {
+              return fract(sin(n) * 43758.5453);
             }
             
-            // 2D Simplex noise
-            vec2 hash(vec2 p) {
-              p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
-              return -1.0 + 2.0 * fract(sin(p) * 43758.5453123);
+            float noise(vec3 x) {
+              vec3 p = floor(x);
+              vec3 f = fract(x);
+              f = f * f * (3.0 - 2.0 * f);
+              
+              float n = p.x + p.y * 57.0 + p.z * 113.0;
+              float res = mix(mix(mix(hash(n + 0.0), hash(n + 1.0), f.x),
+                              mix(hash(n + 57.0), hash(n + 58.0), f.x), f.y),
+                          mix(mix(hash(n + 113.0), hash(n + 114.0), f.x),
+                              mix(hash(n + 170.0), hash(n + 171.0), f.x), f.y), f.z);
+              return res;
             }
             
-            float noise(vec2 p) {
-              const float K1 = 0.366025404;
-              const float K2 = 0.211324865;
+            float fbm(vec3 x) {
+              float v = 0.0;
+              float a = 0.5;
+              vec3 shift = vec3(100.0);
               
-              vec2 i = floor(p + (p.x + p.y) * K1);
-              vec2 a = p - i + (i.x + i.y) * K2;
-              vec2 o = (a.x > a.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
-              vec2 b = a - o + K2;
-              vec2 c = a - 1.0 + 2.0 * K2;
-              
-              vec3 h = max(0.5 - vec3(dot(a, a), dot(b, b), dot(c, c)), 0.0);
-              vec3 n = h * h * h * h * vec3(dot(a, hash(i)), dot(b, hash(i + o)), dot(c, hash(i + 1.0)));
-              
-              return dot(n, vec3(70.0));
-            }
-            
-            float fbm(vec2 p) {
-              float f = 0.0;
-              float w = 0.5;
-              for (int i = 0; i < 5; i++) {
-                f += w * noise(p);
-                p *= 2.0;
-                w *= 0.5;
+              for (int i = 0; i < 5; ++i) {
+                v += a * noise(x);
+                x = x * 2.0 + shift;
+                a *= 0.5;
               }
-              return f;
+              return v;
             }
             
-            // Color blending function
-            vec3 colorBlend(float t) {
-              // Infinity stone colors
-              vec3 purple = vec3(0.5, 0.0, 0.5);  // Mind stone
-              vec3 blue = vec3(0.0, 0.5, 1.0);    // Space stone 
-              vec3 red = vec3(1.0, 0.1, 0.1);     // Reality stone
-              vec3 orange = vec3(1.0, 0.5, 0.0);  // Soul stone
-              vec3 yellow = vec3(1.0, 0.8, 0.0);  // Time stone
-              vec3 green = vec3(0.0, 0.8, 0.2);   // Power stone
+            vec3 getColorByTime(float t) {
+              // Cycle through cosmic "infinity stone" colors
+              vec3 colors[6];
+              colors[0] = vec3(0.6, 0.0, 0.8); // Purple (Power)
+              colors[1] = vec3(0.0, 0.7, 1.0); // Blue (Space)
+              colors[2] = vec3(1.0, 0.2, 0.0); // Red (Reality)
+              colors[3] = vec3(1.0, 0.8, 0.0); // Yellow (Mind)
+              colors[4] = vec3(0.0, 0.8, 0.4); // Green (Time)
+              colors[5] = vec3(1.0, 0.4, 0.0); // Orange (Soul)
               
-              // Cycle through colors based on time
-              float cycle = mod(t, 6.0);
+              float cycleSpeed = 10.0; // Speed of color cycling
+              float index = mod(t * 0.1, 6.0);
+              int i = int(floor(index));
+              int j = int(floor(mod(float(i) + 1.0, 6.0)));
+              float blend = fract(index);
               
-              if (cycle < 1.0) return mix(purple, blue, cycle);
-              else if (cycle < 2.0) return mix(blue, red, cycle - 1.0);
-              else if (cycle < 3.0) return mix(red, orange, cycle - 2.0);
-              else if (cycle < 4.0) return mix(orange, yellow, cycle - 3.0);
-              else if (cycle < 5.0) return mix(yellow, green, cycle - 4.0);
-              else return mix(green, purple, cycle - 5.0);
+              return mix(colors[i], colors[j], blend);
             }
             
             void main() {
-              // Normalized, centered UV coordinates
+              // Normalized pixel coordinates (0 to 1)
               vec2 uv = gl_FragCoord.xy / iResolution.xy;
-              vec2 centered = uv - vec2(0.5, 0.0); // Origin at bottom center
               
-              // Time variables
-              float time = iTime * 0.2;
-              float timeCycle = mod(time, 10.0);
+              // Center horizontally (x ranges from -1 to 1, y from 0 to 1)
+              vec2 centered = vec2(uv.x * 2.0 - 1.0, uv.y);
               
-              // Create base smoke effect
-              float smoke = 0.0;
+              // Animate smoke rising from bottom center
+              float t = iTime * 0.2;
               
-              // Multiple layers of noise
-              for (int i = 0; i < 3; i++) {
-                float t = time * (0.5 + float(i) * 0.2);
-                
-                // Rising movement, faster as it goes up
-                float yOffset = t + uv.y * 2.0;
-                
-                // Swirl around center as it rises
-                float xMod = centered.x * (1.0 + uv.y);
-                float swirl = sin(uv.y * 3.0 + time) * 0.1 * (1.0 - uv.y);
-                
-                // Sample noise for smoke effect
-                vec2 smokeUV = vec2(
-                  xMod + swirl,
-                  yOffset
-                );
-                
-                // Scale the noise differently for each layer
-                float scale = 2.0 + float(i) * 2.0;
-                float n = fbm(smokeUV * scale);
-                
-                // Add to smoke with intensity falloff based on distance from bottom center
-                float intensity = (1.0 - length(centered * vec2(1.2, 2.0))) * (1.0 - uv.y * 0.5);
-                intensity = max(0.0, intensity);
-                
-                smoke += n * intensity * (0.5 - float(i) * 0.1);
-              }
+              // Source of smoke is at the bottom center
+              vec2 smokeSource = vec2(0.0, -0.5);
               
-              // Edge glow effect
-              float edge = 1.0 - smoothstep(0.4, 0.5, length(centered * vec2(1.0, 0.5)));
-              smoke *= edge;
+              // Calculate smoke density based on distance from source and noise
+              float dist = length(centered - smokeSource);
+              float speed = 0.15; // Speed of rising smoke
+              float smokeLevel = t * speed; // How high the smoke has risen
               
-              // Fade the smoke near the top
-              smoke *= (1.0 - smoothstep(0.5, 0.9, uv.y));
+              // Smoke rises and expands
+              float expansionFactor = 1.5;
+              float spreadFactor = 2.0;
               
-              // Add some subtle detail variations
-              smoke += fbm(uv * 10.0 + time * 0.1) * 0.05 * smoke;
+              // Use noise to create swirling smoke effect
+              vec3 noisePos = vec3(centered.x * spreadFactor, 
+                                  centered.y * spreadFactor + t * 0.3, 
+                                  t * 0.1);
               
-              // Color blending over time
-              vec3 smokeColor = colorBlend(time * 0.2);
+              float noise1 = fbm(noisePos);
+              float noise2 = fbm(noisePos * 2.0 + vec3(8.5, 2.3, 1.0));
               
-              // Add some brighter spots that change color at a different rate
-              float brightSpots = fbm(uv * 5.0 + vec2(0.0, time * 0.3)) * smoke * 0.5;
-              vec3 brightColor = colorBlend(time * 0.5 + 2.0);
+              // Create smoke density that rises and swirls
+              float smokeEffect = smoothstep(0.1, 0.9, noise1 * noise2);
               
-              // Combine colors
-              vec3 finalColor = smokeColor * smoke + brightColor * brightSpots;
+              // Smoke fades at the top
+              float fadeTop = smoothstep(1.0, 0.3, uv.y); 
               
-              // Add some stars in the background
-              float stars = pow(hash21(uv * 100.0), 20.0) * 0.5;
-              finalColor += vec3(stars) * (1.0 - smoke * 2.0);
+              // More dense at the bottom
+              float fadeBottom = smoothstep(0.0, smokeLevel, uv.y);
               
-              // Gamma correction
-              finalColor = pow(finalColor, vec3(0.8));
+              // Smoke rises over time
+              float smokeDensity = smokeEffect * fadeBottom * fadeTop;
               
-              gl_FragColor = vec4(finalColor, 1.0);
+              // Add vertical gradient to make smoke thicker at bottom
+              smokeDensity *= mix(1.0, 0.2, pow(uv.y, 1.5));
+              
+              // Determine color based on noise and time
+              vec3 smokeColor = getColorByTime(t + noise1 * 3.0);
+              vec3 smokeColor2 = getColorByTime(t * 1.5 + noise2 * 2.0);
+              vec3 finalColor = mix(smokeColor, smokeColor2, noise2);
+              
+              // Intensity and glow effect
+              finalColor *= 1.2 + 0.5 * sin(t * 0.5);
+              
+              // Add some variation/texture to the smoke
+              finalColor *= 0.8 + 0.4 * noise(vec3(centered * 5.0, t));
+              
+              // Combine everything
+              vec3 color = finalColor * smokeDensity;
+              
+              // Output with transparency based on smoke density
+              gl_FragColor = vec4(color, smokeDensity * 0.9);
             }
           `}
+          transparent={true}
+          depthWrite={false}
         />
       </mesh>
     </>
