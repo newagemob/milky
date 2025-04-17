@@ -1,5 +1,3 @@
-"use client"
-
 import type React from "react"
 
 import { MilkyOrbR3F } from "@/components/glsl/MilkyOrbR3F"
