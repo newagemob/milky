@@ -6,7 +6,7 @@ import { shaderMaterial } from "@react-three/drei"
 import * as THREE from "three"
 
 // Create a shader material using drei's shaderMaterial
-const LickingFlameMaterial = shaderMaterial(
+const MilkyFireMaterial = shaderMaterial(
   {
     t: 0,
     r: new THREE.Vector2(1, 1),
@@ -43,15 +43,15 @@ const LickingFlameMaterial = shaderMaterial(
       
       o = tanh(o / 1e3);
       
-      // Apply warm flame colors
-      vec3 flameColor = vec3(1.0, 0.5, 0.2);
-      gl_FragColor = vec4(o.rgb * flameColor, 1.0);
+      // Add warmer fire colors
+      vec3 fireColor = vec3(1.0, 0.5, 0.1);
+      gl_FragColor = vec4(o.rgb * fireColor, 1.0);
     }
   `,
 )
 
 // Extend the Three.js materials with our custom material
-extend({ LickingFlameMaterial })
+extend({ MilkyFireMaterial })
 
 export function MilkyFireR3F() {
   const materialRef = useRef<THREE.ShaderMaterial>(null)
@@ -60,7 +60,7 @@ export function MilkyFireR3F() {
     if (materialRef.current) {
       materialRef.current.uniforms.t.value = state.clock.getElapsedTime()
 
-      // Update resolution if needed
+      // Update resolution when canvas size changes
       const size = state.size
       materialRef.current.uniforms.r.value = new THREE.Vector2(size.width, size.height)
     }
@@ -70,7 +70,7 @@ export function MilkyFireR3F() {
     <>
       <mesh>
         <planeGeometry args={[2, 2]} />
-        <lickingFlameMaterial ref={materialRef} />
+        <milkyFireMaterial ref={materialRef} />
       </mesh>
     </>
   )
