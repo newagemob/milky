@@ -3,7 +3,7 @@ import type React from "react"
 import { MilkyOrbR3F } from "@/components/glsl/MilkyOrbR3F"
 import { MilkyStarsR3F } from "@/components/glsl/MilkyStarsR3F"
 import { MilkyCosmicR3F } from "@/components/glsl/MilkyCosmicR3F"
-import { MilkySmokeScreenR3F } from "@/components/glsl/MilkySmokeScreenR3F"
+import { MilkyFireR3F } from "@/components/glsl/MilkyFireR3F"
 
 export interface ComponentData {
   id: string
@@ -335,12 +335,12 @@ export function MilkyCosmicR3F() {
 }`,
   },
   {
-    id: "milky-smoke-screen",
-    name: "Milky Smoke Screen",
-    description: "A cosmic smoke effect that rises from the bottom with shifting infinity stone colors",
-    tags: ["shader", "smoke", "cosmic", "animation"],
-    thumbnail: "/thumbnails/milky-smoke-screen.jpg",
-    component: MilkySmokeScreenR3F,
+    id: "milky-fire",
+    name: "Milky Fire",
+    description: "A cosmic fire effect that rises from the bottom with shifting colors",
+    tags: ["shader", "fire", "cosmic", "animation"],
+    thumbnail: "/thumbnails/milky-fire.jpg",
+    component: MilkyFireR3F,
     code: `"use client"
 
 import { useRef } from "react"
