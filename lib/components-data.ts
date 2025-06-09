@@ -4,6 +4,7 @@ import { MilkyOrbR3F } from "@/components/glsl/MilkyOrbR3F"
 import { MilkyStarsR3F } from "@/components/glsl/MilkyStarsR3F"
 import { MilkyCosmicR3F } from "@/components/glsl/MilkyCosmicR3F"
 import { MilkyFireR3F } from "@/components/glsl/MilkyFireR3F"
+import { MilkyTitanR3F } from "@/components/glsl/MilkyTitanR3F"
 
 export interface ComponentData {
   id: string
