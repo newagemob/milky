@@ -35,21 +35,38 @@ export function MilkyFireR3F() {
             uniform float iTime;
             uniform vec3 iResolution;
             
-            // Noise function for organic fire movement
-            float noise(vec3 p) {
-              return sin(p.x) * sin(p.y) * sin(p.z);
+            // Fire color palette function
+            vec3 fireColor(float intensity, float heat) {
+              // Create realistic fire colors from deep red to bright yellow-white
+              vec3 darkRed = vec3(0.1, 0.0, 0.0);
+              vec3 red = vec3(1.0, 0.1, 0.0);
+              vec3 orange = vec3(1.0, 0.4, 0.0);
+              vec3 yellow = vec3(1.0, 0.8, 0.2);
+              vec3 white = vec3(1.0, 1.0, 0.9);
+              vec3 blue = vec3(0.3, 0.5, 1.0);
+              
+              vec3 color;
+              if (heat < 0.2) {
+                color = mix(darkRed, red, heat * 5.0);
+              } else if (heat < 0.4) {
+                color = mix(red, orange, (heat - 0.2) * 5.0);
+              } else if (heat < 0.7) {
+                color = mix(orange, yellow, (heat - 0.4) * 3.33);
+              } else if (heat < 0.9) {
+                color = mix(yellow, white, (heat - 0.7) * 5.0);
+              } else {
+                // Hottest parts get blue-white tint
+                color = mix(white, blue, (heat - 0.9) * 10.0);
+              }
+              
+              return color * intensity;
             }
             
-            // Fractal brownian motion for detailed fire texture
-            float fbm(vec3 p) {
-              float value = 0.0;
-              float amplitude = 0.5;
-              for(int i = 0; i < 4; i++) {
-                value += amplitude * noise(p);
-                p *= 2.0;
-                amplitude *= 0.5;
-              }
-              return value;
+            // Noise function for organic fire movement
+            float noise(vec3 p) {
+              return sin(p.x * 1.2) * sin(p.y * 1.3) * sin(p.z * 1.1) +
+                     sin(p.x * 2.4) * sin(p.y * 2.6) * sin(p.z * 2.2) * 0.5 +
+                     sin(p.x * 4.8) * sin(p.y * 5.2) * sin(p.z * 4.4) * 0.25;
             }
             
             void main() {
@@ -61,81 +78,72 @@ export function MilkyFireR3F() {
               vec4 o = vec4(0.0);
               float z = 0.0;
               
-              // Fire ember characteristics
-              float emberCore = length(uv);
-              float emberPulse = sin(t * 2.0) * 0.1 + 0.9;
+              // Create radial distance for ember shape
+              float centerDist = length(uv);
               
-              // Main raymarching loop for fire volume
-              for(float i = 0.0; i < 60.0; i++) {
-                // Create 3D position with organic movement
-                vec3 p = vec3(uv * (1.0 + z * 0.3), z + t * 0.5);
+              // Main raymarching loop for atmospheric fire
+              for(float i = 0.0; i < 45.0; i++) {
+                float ii = i + 1.0;
                 
-                // Add swirling motion like rising hot air
-                float swirl = sin(t * 1.5 + p.z * 0.5) * 0.3;
-                p.x += swirl * (1.0 - emberCore);
-                p.y += cos(t * 1.2 + p.z * 0.7) * 0.2;
+                // Create 3D position with depth
+                vec3 p = vec3(uv * (1.0 + z * 0.1), z);
                 
-                // Create flickering with fractal noise
-                float flicker = fbm(p * 3.0 + vec3(0.0, t * 2.0, 0.0));
-                p += flicker * 0.1;
+                // Add organic fire movement with multiple noise layers
+                p.x += sin(t * 0.8 + p.y * 2.0) * 0.3;
+                p.y += cos(t * 0.6 + p.x * 1.5) * 0.2;
+                p.z += sin(t * 0.4 + centerDist * 3.0) * 0.5;
                 
-                // Distance field for ember shape
-                float emberDist = length(p.xy) - (0.4 + flicker * 0.2) * emberPulse;
-                float d = max(emberDist, 0.01);
+                // Apply turbulent rotation for fire swirling
+                float swirl = sin(t * 0.5 + centerDist * 4.0) * 0.5;
+                mat2 rotMat = mat2(cos(swirl), sin(swirl), -sin(swirl), cos(swirl));
+                p.xy *= rotMat;
                 
-                // Step size based on distance
-                float step = 0.02 + d * 0.1;
-                z += step;
-                
-                // Fire color temperature based on density and position
-                float density = 1.0 / (1.0 + d * 10.0);
-                float temperature = density * (1.0 - z * 0.1);
-                
-                // Multicolor fire gradient
-                vec3 emberColor = vec3(0.0);
-                if(temperature > 0.8) {
-                  // Hot core - white/blue
-                  emberColor = vec3(1.2, 1.1, 0.8);
-                } else if(temperature > 0.6) {
-                  // Medium heat - yellow/orange
-                  emberColor = vec3(1.5, 0.8, 0.3);
-                } else if(temperature > 0.3) {
-                  // Warm glow - orange/red
-                  emberColor = vec3(1.2, 0.4, 0.1);
-                } else if(temperature > 0.1) {
-                  // Cool edges - deep red
-                  emberColor = vec3(0.8, 0.2, 0.05);
+                // Multi-scale fractal deformation for organic fire shapes
+                vec3 pp = p;
+                for(float j = 1.0; j < 4.0; j++) {
+                  pp += sin(p * j + t * (0.5 + j * 0.1)) / j * 0.3;
                 }
                 
-                // Add atmospheric scattering
-                float scatter = exp(-z * 0.5) * density;
-                emberColor *= scatter;
+                // Distance field - creates ember-like density
+                float density = 1.0 - smoothstep(0.0, 1.8, centerDist);
+                float fireShape = abs(length(pp.xy) - 0.3 - noise(pp + t * 0.2) * 0.2);
+                float d = 0.01 + fireShape * 0.1;
                 
-                // Accumulate color with proper fire opacity
-                o.rgb += emberColor * temperature * 0.02;
-                o.a += density * 0.01;
+                // Calculate heat based on position and time
+                float heat = density * (1.0 - centerDist * 0.7) + 
+                           sin(t * 2.0 + ii * 0.3) * 0.2 + 
+                           noise(pp * 2.0 + t * 0.3) * 0.3;
+                heat = clamp(heat, 0.0, 1.0);
                 
-                // Early exit for performance
-                if(z > 3.0 || o.a > 0.95) break;
+                // Intensity based on distance and heat
+                float intensity = heat / (d * sqrt(ii) + 0.1);
+                intensity *= (1.0 - z * 0.1); // Fade with depth
+                
+                // Add flickering
+                intensity *= 0.8 + sin(t * 4.0 + ii * 1.5) * 0.2;
+                
+                // Get fire color and accumulate
+                vec3 color = fireColor(intensity * 0.3, heat);
+                o.rgb += color;
+                
+                // Step forward
+                z += d;
+                if (z > 3.0) break; // Don't go too deep
               }
               
-              // Add outer glow effect
-              float outerGlow = exp(-emberCore * 3.0) * emberPulse;
-              vec3 glowColor = vec3(1.0, 0.3, 0.1) * outerGlow * 0.5;
-              o.rgb += glowColor;
+              // Post-processing for atmospheric glow
+              o.rgb = pow(o.rgb, vec3(0.8)); // Gamma correction
               
-              // Enhanced atmospheric effect
-              float atmosphere = exp(-emberCore * 1.5);
-              o.rgb += vec3(0.9, 0.4, 0.1) * atmosphere * 0.2;
+              // Add outer glow
+              float glow = exp(-centerDist * 2.0) * 0.5;
+              o.rgb += fireColor(glow, glow) * 0.3;
               
-              // Tone mapping for realistic fire look
-              o.rgb = 1.0 - exp(-o.rgb * 1.5);
+              // Add subtle atmospheric scattering
+              vec3 atmosphere = vec3(1.0, 0.6, 0.3) * exp(-centerDist * 1.5) * 0.1;
+              o.rgb += atmosphere;
               
-              // Add subtle sparkle effects
-              float sparkle = noise(vec3(uv * 20.0, t * 5.0));
-              if(sparkle > 0.97) {
-                o.rgb += vec3(1.0, 0.8, 0.3) * (sparkle - 0.97) * 10.0;
-              }
+              // Enhance contrast and warmth
+              o.rgb = tanh(o.rgb * 1.2);
               
               gl_FragColor = vec4(o.rgb, 1.0);
             }
