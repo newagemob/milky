@@ -2,7 +2,7 @@ import { useRef } from "react"
 import { useFrame } from "@react-three/fiber"
 import * as THREE from "three"
 
-export function RaymarchedShaderR3F() {
+export function MilkyTitanR3F() {
   const materialRef = useRef<THREE.ShaderMaterial>(null)
 
   useFrame((state) => {
