@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react"
+import React, { useRef } from "react"
 import { useFrame } from "@react-three/fiber"
 import * as THREE from "three"
 
@@ -10,7 +10,8 @@ export function MilkyTitanR3F() {
   useFrame((state) => {
     if (materialRef.current) {
       materialRef.current.uniforms.iTime.value = state.clock.getElapsedTime()
-      
+
+      // Update resolution if needed
       const size = state.size
       materialRef.current.uniforms.iResolution.value = new THREE.Vector3(size.width, size.height, 1)
     }
@@ -41,59 +42,48 @@ export function MilkyTitanR3F() {
               vec4 o = vec4(0.0);
               float t = iTime;
               
-              // Proper screen coordinate setup
-              vec2 uv = (FC.xy * 2.0 - r.xy) / r.y;
+              // Create smooth infinite loop for moon phases (0 to 1 and back)
+              float phaseTime = sin(t * 0.3) * 0.5 + 0.5;
               
-              // Add smooth continuous animation
-              float animCycle = sin(t * 0.3) * 0.5 + 0.5;
-              float inversionFactor = sin(t * 0.15);
-              
-              // Raymarching variables
-              float z = 0.0;
-              
-              // Raymarching loop - closer to original
+              // Raymarching loop - adapted from original GLSL
               for(float i = 0.0; i < 40.0; i++) {
-                float ii = i + 1.0;
+                // Calculate ray direction
+                vec3 p = (i * 0.02) * normalize(vec3(FC.rgb * 2.0 - r.xyx));
                 
-                // Ray direction setup (fixed the FC.rgb issue)
-                vec3 rayDir = normalize(vec3(uv.x, uv.y, 1.0));
-                vec3 p = z * rayDir;
-                
-                // Apply rotation matrix to p.yz
-                float rotTime = t * 0.5;
-                mat2 rotMat = mat2(cos(rotTime), sin(rotTime), -sin(rotTime), cos(rotTime));
+                // Apply transformation matrix for interesting shape
+                mat2 rotMat = mat2(0.8, 0.6, -0.6, 0.8);
                 p.yz *= 0.1 * rotMat;
                 p.z += 8.0;
                 
-                // Distance field
+                // Distance field for sphere (moon)
                 float s = length(p) - 6.0;
                 float d = 0.02 + 0.2 * abs(s);
-                z += d;
                 
-                // Lighting calculation
-                vec2 cosInput = t * 0.5 + vec2(0.0, 11.0);
-                float b = max(dot(p.xz, cos(cosInput)) - p.y + s, 0.1);
+                // Moon phase calculation - creates the waxing/waning effect
+                vec2 sunDir = vec2(cos(phaseTime * 6.28318), sin(phaseTime * 6.28318));
+                float moonPhase = max(dot(p.xz, sunDir) - p.y + s, 0.1);
                 
-                // Color accumulation
-                vec4 colorTerm = cos(tanh(s + s) * 3.0 + b * 0.3 - vec4(0, 1, 2, 0) - 2.0) + 1.0;
-                o += colorTerm / d / z * b;
+                // Color calculation with atmospheric glow
+                vec4 colorContrib = (cos(tanh(s + s) * 3.0 + moonPhase * 0.3 - vec4(0, 1, 2, 0) - 2.0) + 1.0) / d / (i + 1.0) * moonPhase;
+                o += colorContrib;
               }
               
-              // Final processing
+              // Final color processing
               o = tanh(o / 4000.0);
               
-              // Continuous color animation
-              vec3 colorMod = vec3(
-                0.5 + 0.5 * sin(t * 0.2),
-                0.5 + 0.5 * cos(t * 0.25),
-                0.5 + 0.5 * sin(t * 0.3)
-              );
+              // Add moon-like silver-blue tint with atmospheric glow
+              vec3 moonColor = vec3(0.9, 0.95, 1.0); // Cool moonlight
+              vec3 atmosphereColor = vec3(0.3, 0.4, 0.8); // Blue atmospheric glow
               
-              // Apply smooth inversion for infinite loop
-              vec3 finalColor = o.rgb * colorMod;
-              finalColor = mix(finalColor, 1.0 - finalColor, 0.5 + 0.5 * sin(t * 0.1));
+              // Mix colors based on intensity
+              float intensity = length(o.rgb);
+              vec3 finalColor = mix(atmosphereColor, moonColor, smoothstep(0.1, 0.8, intensity));
               
-              gl_FragColor = vec4(finalColor, 1.0);
+              // Add subtle warm glow at the edges (like earthshine)
+              float edgeGlow = 1.0 - smoothstep(0.0, 0.3, intensity);
+              finalColor += vec3(0.8, 0.6, 0.3) * edgeGlow * 0.2;
+              
+              gl_FragColor = vec4(finalColor * o.rgb, 1.0);
             }
           `}
         />
