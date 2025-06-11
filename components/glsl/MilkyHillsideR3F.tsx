@@ -76,7 +76,7 @@ function WaveShader() {
   );
 }
 
-export default function GLSLWaveEffect() {
+export default function MilkyHillsideR3F() {
   return (
     <div className="w-full h-screen bg-black">
       <Canvas
