@@ -44,7 +44,7 @@ export default function MilkyHillsideR3F() {
     `;
 
     // Compile shader
-    function createShader(gl, type, source) {
+    function createShader(gl: WebGLRenderingContext, type: number, source: string): WebGLShader | null {
       const shader = gl.createShader(type);
       gl.shaderSource(shader, source);
       gl.compileShader(shader);
@@ -58,7 +58,7 @@ export default function MilkyHillsideR3F() {
     }
 
     // Create program
-    function createProgram(gl, vertexShader, fragmentShader) {
+    function createProgram(gl: WebGLRenderingContext, vertexShader: WebGLShader, fragmentShader: WebGLShader): WebGLProgram | null {
       const program = gl.createProgram();
       gl.attachShader(program, vertexShader);
       gl.attachShader(program, fragmentShader);
@@ -97,7 +97,7 @@ export default function MilkyHillsideR3F() {
     const resolutionUniformLocation = gl.getUniformLocation(program, 'r');
 
     // Resize canvas to match display size
-    function resizeCanvas() {
+    function resizeCanvas(): void {
       const rect = canvas.getBoundingClientRect();
       canvas.width = rect.width * window.devicePixelRatio;
       canvas.height = rect.height * window.devicePixelRatio;
@@ -105,7 +105,7 @@ export default function MilkyHillsideR3F() {
     }
 
     // Animation loop
-    function animate() {
+    function animate(): void {
       timeRef.current += 0.016; // ~60fps
       
       resizeCanvas();
@@ -134,7 +134,7 @@ export default function MilkyHillsideR3F() {
     animate();
 
     // Handle resize
-    const handleResize = () => resizeCanvas();
+    const handleResize = (): void => resizeCanvas();
     window.addEventListener('resize', handleResize);
 
     // Cleanup
