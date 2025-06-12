@@ -3,10 +3,10 @@
 import React, { useRef, useEffect } from 'react';
 
 export default function MilkyHillsideR3F() {
-  const canvasRef = useRef(null);
-  const programRef = useRef(null);
-  const timeRef = useRef(0);
-  const animationIdRef = useRef(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const programRef = useRef<WebGLProgram | null>(null);
+  const timeRef = useRef<number>(0);
+  const animationIdRef = useRef<number | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
