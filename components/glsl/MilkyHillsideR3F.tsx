@@ -2,7 +2,7 @@
 
 import React, { useRef, useEffect } from 'react';
 
-export default function GLSLWaveEffect() {
+export default function MilkyHillsideR3F() {
   const canvasRef = useRef(null);
   const programRef = useRef(null);
   const timeRef = useRef(0);
