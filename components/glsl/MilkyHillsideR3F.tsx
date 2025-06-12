@@ -46,6 +46,11 @@ export default function MilkyHillsideR3F() {
     // Compile shader
     function createShader(gl: WebGLRenderingContext, type: number, source: string): WebGLShader | null {
       const shader = gl.createShader(type);
+      if (!shader) {
+        console.error('Failed to create shader');
+        return null;
+      }
+      
       gl.shaderSource(shader, source);
       gl.compileShader(shader);
       
@@ -74,6 +79,12 @@ export default function MilkyHillsideR3F() {
 
     const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
     const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+    
+    if (!vertexShader || !fragmentShader) {
+      console.error('Failed to create shaders');
+      return;
+    }
+    
     const program = createProgram(gl, vertexShader, fragmentShader);
 
     if (!program) return;
